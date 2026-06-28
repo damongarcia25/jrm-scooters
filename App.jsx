@@ -259,6 +259,14 @@ export default function App() {
   const [confirmation, setConfirmation] = useState(null);
   const [opOpen, setOpOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const shareApp = async () => {
+    const url = window.location.origin;
+    const shareData = { title: "JRM Scooters", text: "Family fun on wheels - rent party scooters in Tucson by the hour. Open this link, then tap Share -> Add to Home Screen to install it like an app!", url };
+    try {
+      if (navigator.share) { await navigator.share(shareData); }
+      else { await navigator.clipboard.writeText(url); setToast("Link copied - paste it to a friend!"); setTimeout(() => setToast(null), 3000); }
+    } catch (e) { /* share sheet dismissed */ }
+  };
   const bookRef = useRef(null);
 
   const base = useMemo(() => (dateKey ? baseTaken(dateKey) : new Array(16).fill(0)), [dateKey]);
@@ -371,8 +379,11 @@ export default function App() {
           <button className="softbtn" onClick={() => setDark((d) => !d)} title={dark ? "Switch to light mode" : "Switch to dark mode"} style={{ marginLeft: "auto", width: 38, height: 38, borderRadius: 999, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, display: "grid", placeItems: "center" }}>
             {dark ? <Sun size={17} color={C.amber} /> : <Moon size={17} color={C.violet} />}
           </button>
+          <button className="softbtn" onClick={shareApp} title="Share JRM Scooters" style={{ width: 38, height: 38, borderRadius: 999, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, display: "grid", placeItems: "center" }}>
+            <Share2 size={16} color={C.violet} />
+          </button>
           <button className="softbtn" onClick={() => setDrawer(true)} style={{ display: "flex", alignItems: "center", gap: 8, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, padding: "9px 16px", borderRadius: 999, fontWeight: 600, fontSize: 14 }}>
-            <CalendarDays size={16} /> Bookings
+            <CalendarDays size={16} /> <span className="hide-sm" style={{ display: "inline" }}>Bookings</span>
             {bookings.length > 0 && <span style={{ background: C.pink, borderRadius: 999, minWidth: 20, height: 20, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700, padding: "0 5px" }}>{bookings.length}</span>}
           </button>
         </div>
@@ -651,9 +662,14 @@ export default function App() {
       <footer style={{ borderTop: `1px solid ${C.line}`, background: C.surface }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "20px 20px calc(20px + env(safe-area-inset-bottom))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <span style={{ fontSize: 13, color: C.mute }}>© {BRAND} · Tucson, AZ · (520) 286-3729 · ride. explore. create memories.</span>
-          <button className="softbtn" onClick={() => setOpOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: C.mute }}>
-            <Lock size={13} /> Operator login
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <button className="softbtn" onClick={shareApp} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 15px", borderRadius: 999, background: C.grad, color: "#0B0D08", fontWeight: 800, fontSize: 13.5 }}>
+              <Share2 size={15} color="#0B0D08" /> Share with friends
+            </button>
+            <button className="softbtn" onClick={() => setOpOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: C.mute }}>
+              <Lock size={13} /> Operator login
+            </button>
+          </div>
         </div>
       </footer>
 
