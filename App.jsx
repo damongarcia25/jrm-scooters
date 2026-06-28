@@ -18,7 +18,7 @@ const THEMES = {
     "--mute": "#8C9778", "--pink": "#FF6B5E", "--violet": "#A6E635", "--amber": "#FFC24B",
     "--good": "#A6E635", "--low": "#FF6B5E",
     "--grad": "linear-gradient(135deg,#C4F53D 0%,#86C70E 100%)",
-    "--header": "rgba(11,13,8,.86)", "--frame": "#E9ECDF", "--cellfull": "#191D11",
+    "--header": "#0B0D08", "--frame": "#E9ECDF", "--cellfull": "#191D11",
     "--track": "#23291A", "--disabled": "#242B17", "--bodymute": "#B8C0AC",
   },
   light: {
@@ -26,7 +26,7 @@ const THEMES = {
     "--mute": "#5E6A4C", "--pink": "#D9492F", "--violet": "#5C9C10", "--amber": "#B6790A",
     "--good": "#5C9C10", "--low": "#D9492F",
     "--grad": "linear-gradient(135deg,#9FE03A 0%,#6FB00C 100%)",
-    "--header": "rgba(242,245,235,.86)", "--frame": "#2A2E22", "--cellfull": "#E7ECDC",
+    "--header": "#F2F5EB", "--frame": "#2A2E22", "--cellfull": "#E7ECDC",
     "--track": "#D7DECB", "--disabled": "#E4E8DA", "--bodymute": "#566048",
   },
 };
@@ -364,6 +364,8 @@ export default function App() {
 
   return (
     <div style={{ ...THEMES[dark ? "dark" : "light"], background: C.paper, minHeight: "100vh", color: C.ink, transition: "background .25s, color .25s" }}>
+      {/* solid bar behind the phone status bar (time/battery) so nothing overlaps or blurs */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: "env(safe-area-inset-top)", background: C.paper, zIndex: 60 }} />
       <style>{FONTS}</style>
 
       {/* NAV */}
