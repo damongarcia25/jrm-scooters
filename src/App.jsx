@@ -18,7 +18,7 @@ const THEMES = {
     "--mute": "#8C9778", "--pink": "#FF6B5E", "--violet": "#A6E635", "--amber": "#FFC24B",
     "--good": "#A6E635", "--low": "#FF6B5E",
     "--grad": "linear-gradient(135deg,#C4F53D 0%,#86C70E 100%)",
-    "--header": "rgba(11,13,8,.86)", "--frame": "#E9ECDF", "--cellfull": "#191D11",
+    "--header": "#0B0D08", "--frame": "#E9ECDF", "--cellfull": "#191D11",
     "--track": "#23291A", "--disabled": "#242B17", "--bodymute": "#B8C0AC",
   },
   light: {
@@ -26,7 +26,7 @@ const THEMES = {
     "--mute": "#5E6A4C", "--pink": "#D9492F", "--violet": "#5C9C10", "--amber": "#B6790A",
     "--good": "#5C9C10", "--low": "#D9492F",
     "--grad": "linear-gradient(135deg,#9FE03A 0%,#6FB00C 100%)",
-    "--header": "rgba(242,245,235,.86)", "--frame": "#2A2E22", "--cellfull": "#E7ECDC",
+    "--header": "#F2F5EB", "--frame": "#2A2E22", "--cellfull": "#E7ECDC",
     "--track": "#D7DECB", "--disabled": "#E4E8DA", "--bodymute": "#566048",
   },
 };
@@ -259,6 +259,14 @@ export default function App() {
   const [confirmation, setConfirmation] = useState(null);
   const [opOpen, setOpOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const shareApp = async () => {
+    const url = window.location.origin;
+    const shareData = { title: "JRM Scooters", text: "Family fun on wheels - rent party scooters in Tucson by the hour. Open this link, then tap Share -> Add to Home Screen to install it like an app!", url };
+    try {
+      if (navigator.share) { await navigator.share(shareData); }
+      else { await navigator.clipboard.writeText(url); setToast("Link copied - paste it to a friend!"); setTimeout(() => setToast(null), 3000); }
+    } catch (e) { /* share sheet dismissed */ }
+  };
   const bookRef = useRef(null);
 
   const base = useMemo(() => (dateKey ? baseTaken(dateKey) : new Array(16).fill(0)), [dateKey]);
@@ -356,10 +364,12 @@ export default function App() {
 
   return (
     <div style={{ ...THEMES[dark ? "dark" : "light"], background: C.paper, minHeight: "100vh", color: C.ink, transition: "background .25s, color .25s" }}>
+      {/* solid bar behind the phone status bar (time/battery) so nothing overlaps or blurs */}
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: "env(safe-area-inset-top)", background: C.paper, zIndex: 60 }} />
       <style>{FONTS}</style>
 
       {/* NAV */}
-      <header style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--header)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}` }}>
+      <header style={{ position: "sticky", top: 0, zIndex: 40, background: "var(--header)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.line}`, paddingTop: "env(safe-area-inset-top)" }}>
         <div style={{ maxWidth: 1120, margin: "0 auto", padding: "13px 20px", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
             <div style={{ width: 34, height: 34, borderRadius: 11, background: C.grad, display: "grid", placeItems: "center", boxShadow: "0 6px 18px -6px rgba(166,230,53,.4)" }}><Zap size={19} color="#0B0D08" fill="#0B0D08" /></div>
@@ -371,8 +381,11 @@ export default function App() {
           <button className="softbtn" onClick={() => setDark((d) => !d)} title={dark ? "Switch to light mode" : "Switch to dark mode"} style={{ marginLeft: "auto", width: 38, height: 38, borderRadius: 999, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, display: "grid", placeItems: "center" }}>
             {dark ? <Sun size={17} color={C.amber} /> : <Moon size={17} color={C.violet} />}
           </button>
+          <button className="softbtn" onClick={shareApp} title="Share JRM Scooters" style={{ width: 38, height: 38, borderRadius: 999, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, display: "grid", placeItems: "center" }}>
+            <Share2 size={16} color={C.violet} />
+          </button>
           <button className="softbtn" onClick={() => setDrawer(true)} style={{ display: "flex", alignItems: "center", gap: 8, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, padding: "9px 16px", borderRadius: 999, fontWeight: 600, fontSize: 14 }}>
-            <CalendarDays size={16} /> Bookings
+            <CalendarDays size={16} /> <span className="hide-sm" style={{ display: "inline" }}>Bookings</span>
             {bookings.length > 0 && <span style={{ background: C.pink, borderRadius: 999, minWidth: 20, height: 20, display: "grid", placeItems: "center", fontSize: 12, fontWeight: 700, padding: "0 5px" }}>{bookings.length}</span>}
           </button>
         </div>
@@ -649,11 +662,16 @@ export default function App() {
 
       {/* FOOTER */}
       <footer style={{ borderTop: `1px solid ${C.line}`, background: C.surface }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", padding: "20px 20px calc(20px + env(safe-area-inset-bottom))", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <span style={{ fontSize: 13, color: C.mute }}>© {BRAND} · Tucson, AZ · (520) 286-3729 · ride. explore. create memories.</span>
-          <button className="softbtn" onClick={() => setOpOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: C.mute }}>
-            <Lock size={13} /> Operator login
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <button className="softbtn" onClick={shareApp} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 15px", borderRadius: 999, background: C.grad, color: "#0B0D08", fontWeight: 800, fontSize: 13.5 }}>
+              <Share2 size={15} color="#0B0D08" /> Share with friends
+            </button>
+            <button className="softbtn" onClick={() => setOpOpen(true)} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 600, color: C.mute }}>
+              <Lock size={13} /> Operator login
+            </button>
+          </div>
         </div>
       </footer>
 
@@ -702,10 +720,11 @@ function Row({ label, val, mute, good, bold }) {
 
 function Drawer({ bookings, onClose, onCancel }) {
   const total = bookings.reduce((a, b) => a + b.total, 0);
+  const [confirmId, setConfirmId] = useState(null);
   return (
     <div onClick={onClose} className="scrim" style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,.45)" }}>
       <div onClick={(e) => e.stopPropagation()} style={{ position: "absolute", top: 0, right: 0, height: "100%", width: "min(420px,100%)", background: C.surface, boxShadow: "-30px 0 80px -30px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", animation: "slidein .3s ease" }}>
-        <div style={{ padding: "20px 22px", borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ padding: "calc(20px + env(safe-area-inset-top)) 22px 20px", borderBottom: `1px solid ${C.line}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <span className="disp" style={{ fontSize: 21, fontWeight: 800 }}>Your bookings</span>
           <button className="softbtn" onClick={onClose} style={{ width: 34, height: 34, borderRadius: 999, background: C.paper, display: "grid", placeItems: "center" }}><X size={18} /></button>
         </div>
@@ -733,15 +752,24 @@ function Drawer({ bookings, onClose, onCancel }) {
                       <span style={{ display: "flex", alignItems: "center", gap: 4, color: b.protect ? C.good : C.mute }}><ShieldCheck size={13} /> {b.protect ? "Protected" : "No cover"}</span>
                       {b.waiverSignedAt && <span style={{ display: "flex", alignItems: "center", gap: 4, color: C.violet }}><PenLine size={13} /> Signed</span>}
                     </span>
-                    <button onClick={() => onCancel(b.id)} style={{ fontSize: 12.5, color: C.pink, fontWeight: 700 }}>Cancel</button>
+                    {confirmId !== b.id && <button className="softbtn" onClick={() => setConfirmId(b.id)} style={{ fontSize: 12.5, color: C.mute, fontWeight: 700 }}>Cancel booking</button>}
                   </div>
+                  {confirmId === b.id && (
+                    <div style={{ marginTop: 11, background: C.paper, border: `1px solid ${C.line}`, borderRadius: 12, padding: "11px 12px" }}>
+                      <div style={{ fontSize: 12.5, color: C.ink, fontWeight: 600, marginBottom: 9, lineHeight: 1.4 }}>Cancel this booking? Cancellations are subject to our policy (free up to 24 hours before the event).</div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button className="softbtn" onClick={() => setConfirmId(null)} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: C.surface, border: `1px solid ${C.line}`, color: C.ink, fontWeight: 700, fontSize: 13 }}>Keep booking</button>
+                        <button className="softbtn" onClick={() => { onCancel(b.id); setConfirmId(null); }} style={{ flex: 1, padding: "9px 0", borderRadius: 10, background: C.pink, color: "#0B0D08", fontWeight: 800, fontSize: 13 }}>Yes, cancel</button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
         {bookings.length > 0 && (
-          <div style={{ borderTop: `1px solid ${C.line}`, padding: "18px 22px" }}>
+          <div style={{ borderTop: `1px solid ${C.line}`, padding: "18px 22px calc(18px + env(safe-area-inset-bottom))" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
               <span style={{ fontWeight: 600, color: C.mute }}>Total</span>
               <span className="disp" style={{ fontWeight: 800, fontSize: 22 }}>{money(total)}</span>
@@ -972,8 +1000,11 @@ function ConfirmationModal({ b, onClose }) {
 }
 
 /* ============================== OPERATOR DASHBOARD ============================== */
-function OperatorModal({ bookings, onClose }) {
+function OperatorModal({ bookings: rawBookings, onClose }) {
   const todayKey = keyOf(TODAY.getFullYear(), TODAY.getMonth(), TODAY.getDate());
+  const [cancelledIds, setCancelledIds] = useState(() => new Set());
+  const bookings = useMemo(() => rawBookings.filter((b) => !cancelledIds.has(b.id)), [rawBookings, cancelledIds]);
+  const cancelBooking = (id) => setCancelledIds((set) => { const n = new Set(set); n.add(id); return n; });
   const [pin, setPin] = useState("");
   const [authed, setAuthed] = useState(false);
   const [err, setErr] = useState(false);
@@ -1109,7 +1140,7 @@ function OperatorModal({ bookings, onClose }) {
                         <span style={{ fontWeight: 800, fontSize: 14 }}>{dayLabel(selDay)}</span>
                         <button className="softbtn" onClick={() => setSelDay(null)} style={{ fontSize: 12.5, fontWeight: 600, color: C.violet }}>Show all</button>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{dayBookings(selDay).map((b) => <OpRow key={b.id} b={b} />)}</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{dayBookings(selDay).map((b) => <OpRow key={b.id} b={b} onCancel={cancelBooking} />)}</div>
                     </>
                   ) : (
                     <>
@@ -1117,13 +1148,13 @@ function OperatorModal({ bookings, onClose }) {
                       {todays.length === 0 ? (
                         <div style={{ background: C.paper, borderRadius: 12, padding: 14, fontSize: 13.5, color: C.mute }}>No deliveries scheduled for today.</div>
                       ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{todays.map((b) => <OpRow key={b.id} b={b} />)}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{todays.map((b) => <OpRow key={b.id} b={b} onCancel={cancelBooking} />)}</div>
                       )}
                       <div style={{ fontWeight: 800, fontSize: 14, margin: "18px 0 8px" }}>Upcoming bookings</div>
                       {sorted.length === 0 ? (
                         <div style={{ background: C.paper, borderRadius: 12, padding: 14, fontSize: 13.5, color: C.mute }}>Nothing booked yet.</div>
                       ) : (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{sorted.map((b) => <OpRow key={b.id} b={b} showDate />)}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{sorted.map((b) => <OpRow key={b.id} b={b} showDate onCancel={cancelBooking} />)}</div>
                       )}
                     </>
                   )}
@@ -1363,7 +1394,8 @@ function WeekChart({ data }) {
     </div>
   );
 }
-function OpRow({ b, showDate }) {
+function OpRow({ b, showDate, onCancel }) {
+  const [confirming, setConfirming] = useState(false);
   return (
     <div style={{ border: `1px solid ${C.line}`, borderRadius: 13, padding: "12px 13px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
@@ -1385,6 +1417,14 @@ function OpRow({ b, showDate }) {
         <Info icon={MapPin} text={b.address || "no address"} accent />
         {b.notes && <Info icon={StickyNote} text={b.notes} />}
       </div>
+      {onCancel && (confirming ? (
+        <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+          <button className="softbtn" onClick={() => setConfirming(false)} style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: C.paper, border: `1px solid ${C.line}`, color: C.ink, fontWeight: 700, fontSize: 12.5 }}>Keep</button>
+          <button className="softbtn" onClick={() => { onCancel(b.id); setConfirming(false); }} style={{ flex: 1, padding: "8px 0", borderRadius: 9, background: C.pink, color: "#0B0D08", fontWeight: 800, fontSize: 12.5 }}>Confirm cancel</button>
+        </div>
+      ) : (
+        <button className="softbtn" onClick={() => setConfirming(true)} style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: C.mute }}><X size={12} /> Cancel this booking</button>
+      ))}
     </div>
   );
 }
